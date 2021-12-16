@@ -43,16 +43,18 @@ namespace background_service
             {
                 q.UseMicrosoftDependencyInjectionScopedJobFactory();
 
-                // Create a "key" for the job
-                var jobKey = new JobKey("BackgroundService");
-
-                // Register the job with the DI container
-                q.AddJob<MainJob>(opts => opts.WithIdentity(jobKey));
-
-                // Create a trigger for the job
+                var bgMainJobKey = new JobKey("bg-mainjob");
+                q.AddJob<MainJob>(opts => opts.WithIdentity(bgMainJobKey));
                 q.AddTrigger(opts => opts
-                    .ForJob(jobKey) // link to the MainJob
-                    .WithIdentity("BackgroundService-trigger") // give the trigger a unique name
+                    .ForJob(bgMainJobKey) 
+                    .WithIdentity($"{bgMainJobKey}-trigger") 
+                    .WithCronSchedule("0/5 * * * * ?")); // run every 5 seconds
+
+                var otherjobKey = new JobKey("bg-otherjob");
+                q.AddJob<OtherJob>(opts => opts.WithIdentity(otherjobKey));
+                q.AddTrigger(opts => opts
+                    .ForJob(otherjobKey) 
+                    .WithIdentity($"{otherjobKey}-trigger") 
                     .WithCronSchedule("0/5 * * * * ?")); // run every 5 seconds
 
             });
